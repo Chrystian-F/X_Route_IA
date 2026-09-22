@@ -1,0 +1,51 @@
+{
+  "deposito": {
+    "nombre": "Centro de Distribución (Vallejo Poniente)",
+    "lat": 19.467800, 
+    "lon": -99.141500
+  },
+  "entregas": [
+    {"nombre": "Cliente 1", "lat": 19.472500, "lon": -99.139000},
+    {"nombre": "Cliente 2", "lat": 19.475100, "lon": -99.145200},
+    {"nombre": "Cliente 3", "lat": 19.464200, "lon": -99.144200},
+    {"nombre": "Cliente 4", "lat": 19.460500, "lon": -99.138500},
+    {"nombre": "Cliente 5", "lat": 19.458200, "lon": -99.134000},
+    {"nombre": "Cliente 6", "lat": 19.461000, "lon": -99.130000},
+    {"nombre": "Cliente 7", "lat": 19.465500, "lon": -99.127500},
+    {"nombre": "Cliente 8", "lat": 19.470000, "lon": -99.129000},
+    {"nombre": "Cliente 9", "lat": 19.473500, "lon": -99.133000},
+    {"nombre": "Cliente 10", "lat": 19.477000, "lon": -99.138000},
+    {"nombre": "Cliente 11", "lat": 19.478500, "lon": -99.141000},
+    {"nombre": "Cliente 12", "lat": 19.469500, "lon": -99.145500},
+    {"nombre": "Cliente 13", "lat": 19.462500, "lon": -99.144000},
+    {"nombre": "Cliente 14", "lat": 19.457500, "lon": -99.137000},
+    {"nombre": "Cliente 15", "lat": 19.463000, "lon": -99.133500}
+  ],
+  "pares_prueba": [
+    {
+      "tipo": "Ruta corta (misma colonia): Evalúa overhead de A* vs BFS",
+      "origen": {"lat": 19.470500, "lon": -99.136000},
+      "destino": {"lat": 19.472000, "lon": -99.135000}
+    },
+    {
+      "tipo": "Ruta larga perimetral: Maximiza diferencia de nodos expandidos entre UCS y A*",
+      "origen": {"lat": 19.458000, "lon": -99.145000},
+      "destino": {"lat": 19.478000, "lon": -99.128000}
+    },
+    {
+      "tipo": "Cruce de avenida (Insurgentes): Prueba el manejo de cuellos de botella y retornos",
+      "origen": {"lat": 19.466000, "lon": -99.142500},
+      "destino": {"lat": 19.466000, "lon": -99.137500}
+    },
+    {
+      "tipo": "Calles de un solo sentido: Fuerza a rodear manzanas ignorando la línea recta",
+      "origen": {"lat": 19.462500, "lon": -99.144000},
+      "destino": {"lat": 19.463500, "lon": -99.144000}
+    },
+    {
+      "tipo": "Trayectoria diagonal: Demuestra eficiencia de heurística Haversine en A*",
+      "origen": {"lat": 19.469323, "lon": -99.136283},
+      "destino": {"lat": 19.457000, "lon": -99.139000}
+    }
+  ]
+}

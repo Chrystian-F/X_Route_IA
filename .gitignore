@@ -1,0 +1,26 @@
+# Entorno virtual (cada quien crea el suyo con requirements.txt)
+env/
+venv/
+.venv/
+
+# Caché de respuestas crudas de Overpass que genera osmnx
+# (el grafo ya está guardado en data/*.graphml)
+cache/
+
+# Archivos generados por Python y pytest
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Configuración local del editor
+.vscode/
+
+# Scripts de exploración personal (contienen coordenadas privadas)
+src/exploracion.py
+
+# Mapas viejos generados en la raíz (los válidos van en resultados/)
+/*.html
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
