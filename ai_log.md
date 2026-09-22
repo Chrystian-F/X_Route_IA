@@ -189,6 +189,12 @@ Herramienta: Claude (Anthropic), interfaz web de claude.ai. Todas las entradas d
 
 **¿Técnicamente correcto?** Parcialmente. El README incluía una convención que el equipo no había decidido (medir el tiempo sin la reconstrucción del camino); el propio modelo lo advirtió al entregarlo. (completar: qué decidió el equipo.)
 
+**Incorporado / modificado / descartado:**
+El primer `requirements.txt` se generó con `pip freeze` desde un entorno equivocado: incluía librerías de otro proyecto (`firebase_admin`, `pyinstaller`) y no incluía `osmnx`. Lo detecté al instalarlo en un entorno limpio y obtener `ModuleNotFoundError`. Se reescribió a mano con sólo las dependencias directas del proyecto. Al armar el zip limpio, el modelo probó el archivo en un entorno nuevo y detectó que `nodo_mas_cercano` fallaba porque `osmnx` requiere `scikit-learn` para buscar en grafos sin proyectar; se agregó al archivo y verifiqué la instalación completa en mi equipo. Las pruebas de `tests/test_grafo.py` y `tests/test_metricas.py` (12 en total) las escribí a partir de los casos que propuso el modelo: arcos paralelos, bucles, nodos sin salida, arcos en sentido contrario, caminos vacíos y de un solo nodo, y coordenadas fuera del área. Por mi cuenta, agregué los arcos paralelos con el más largo primero, para que la prueba falle si la función sólo conserva el primer arco, y verifiqué el estado inicial de `Medicion`.
+
+**¿Técnicamente correcto?**
+Parcialmente. El modelo no advirtió que en PowerShell `pip freeze > requirements.txt` guarda el archivo en UTF-16, lo que podría impedir que otras herramientas lo leyeran correctamente; se detectó al revisar el zip del proyecto y quedó resuelto al reescribir el archivo. El README generado incluía una convención de medición de tiempo que el equipo aún no había acordado. El modelo señaló ambos errores. La convención de tiempo queda pendiente de confirmar con el equipo.
+
 ---
 ## Jorge Lopez Avila — Busqueda a ciegas (Fase 1)
 ## Entrada — 22 de septiembre de 2026 — Claude (claude.ai)
