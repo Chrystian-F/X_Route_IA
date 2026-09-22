@@ -190,7 +190,30 @@ Herramienta: Claude (Anthropic), interfaz web de claude.ai. Todas las entradas d
 **¿Técnicamente correcto?** Parcialmente. El README incluía una convención que el equipo no había decidido (medir el tiempo sin la reconstrucción del camino); el propio modelo lo advirtió al entregarlo. (completar: qué decidió el equipo.)
 
 ---
+## Jorge Lopez Avila — Busqueda a ciegas (Fase 1)
+## Entrada — 22 de septiembre de 2026 — Claude (claude.ai)
 
+**Prompt exacto:**
+"FASE 1, búsqueda a ciegas — BFS, DFS iterativo con lista de 
+visitados, y UCS con heapq, todo desde cero (nada de nx.shortest_path). 
+Clasificar alcanzables/no alcanzables desde el depósito, correr mínimo 
+5 pares origen-destino y contestar las 3 preguntas de análisis de la fase."
+
+**Output recibido:**
+Archivo fase1.py con implementación de BFS, DFS y UCS, función de 
+verificación de alcanzabilidad, generación de mapas folium y tabla 
+comparativa con pandas.
+
+**Qué se incorporó:**
+La estructura general del archivo y las funciones de visualización 
+(guardar_mapa_ruta, guardar_mapa_snapshot, guardar_mapa_conectividad).
+
+**Qué se modificó:**
+Se cambió el tile de CartoDB a OpenStreetMap por requerir API key.
+
+**¿El output fue técnicamente correcto?**
+Sí. Los 33 tests unitarios pasan y los resultados coinciden con el 
+comportamiento teórico esperado de cada algoritmo.
 ## Otros integrantes
 
 (Cada integrante agrega aquí su sección con el mismo formato.)
