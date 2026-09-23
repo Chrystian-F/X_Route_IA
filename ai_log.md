@@ -283,6 +283,24 @@ y confirmar el b* obtenido en la instancia real para las preguntas de
 análisis (el archivo ya imprime y guarda esos valores automáticamente en
 `resultados/fase2/resultados_fase2.csv`).
 
+---
+## [Flores Bonilla Jesus Eduardo] — Búsqueda local (Fase 3)
+## Entrada — 23 de septiembre de 2026 — Claude Code (claude.ai/code)
+
+**Prompt exacto:**
+"Explicame la fase 3 Búsqueda local (deseable compl FASE 3, búsqueda local — Algoritmo Genético con permutación, cruza OX y mutación por intercambio; Simulated Annealing con enfriamiento geométrico justificado; operador 2-opt; curva de convergencia y comparación calidad vs. tiempoetar esta sección)."
+
+(Se adjuntó el zip del repositorio en la rama `ulises` y el PDF de la práctica.)
+
+**Output recibido:**
+`src/fase3.py` con la matriz de distancias reales calculada con A* de Fase 2, la función objetivo `costo_ruta()`, los operadores 2-opt, OX y mutación por intercambio, Simulated Annealing con enfriamiento geométrico, Algoritmo Genético, hill climbing 2-opt, vecino más cercano, el óptimo exacto por Held-Karp como referencia, el análisis del paisaje de optimización, el experimento de T0, cuatro gráficas de matplotlib, el mapa folium de la mejor ruta y las respuestas a las tres preguntas de análisis. También `tests/test_fase3.py` (40 pruebas) y la sección de Fase 3 del README. Aparte, fuera del repositorio, una explicación de toda la fase para estudiarla.
+
+**Qué se incorporó / modificó:**
+El primer borrador usaba α = 0.95 y un GA de 100 × 200 con mutación 0.2; al correrlo sobre el grafo real quedaban ~10% y ~9% arriba del óptimo. Se midió que la matriz de A* es asimétrica (~420 m de diferencia media entre ida y vuelta por las calles de un solo sentido), lo que vuelve muy rugoso el paisaje bajo 2-opt (255 óptimos locales distintos en 300 arranques). Con eso se cambiaron los parámetros a α = 0.99 y GA 200 × 400 con mutación 0.5 (se probaron 0.2, 0.3, 0.5 y 0.7 con 10 semillas). También se reescribió la respuesta de la pregunta sobre T0, que afirmaba que un T0 muy alto empeora el resultado; el experimento con el mismo número de iteraciones no lo mostró.
+
+**¿El output fue técnicamente correcto?**
+Se verificó con `pytest` (Held-Karp contra fuerza bruta en matrices asimétricas, OX contra el ejemplo del libro de Eiben & Smith, SA y GA encontrando el óptimo en instancias de 7 entregas) y ejecutando `python src/fase3.py` con el `.graphml` real. **Pendiente del integrante:** revisar el código y la explicación, y completar esta entrada con su nombre y lo que modifique.
+
 ## Otros integrantes
 
 (Cada integrante agrega aquí su sección con el mismo formato.)

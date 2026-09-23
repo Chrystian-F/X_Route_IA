@@ -1,0 +1,6 @@
+Metodo,Corridas,Costo_medio,Mejor,Peor,Desv_std,Mejora_media_pct,Gap_medio_pct,Veces_optimo,Tiempo_medio_ms,Evaluaciones_medias
+Vecino más cercano,1,16615.4,16615.4,16615.4,,47.65,27.6,0,0.05,1.0
+Vecino más cercano + 2-opt,1,16615.4,16615.4,16615.4,,47.65,27.6,0,0.21,106.0
+2-opt (hill climbing),10,16262.01,13021.0,19718.6,2931.44,48.76,24.89,1,1.37,1030.0
+Simulated Annealing,10,13311.55,13021.0,14354.4,454.09,58.06,2.23,1,338.4,92611.0
+Algoritmo Genético,10,13029.32,13021.0,13031.4,4.39,58.95,0.06,2,916.76,79400.0
