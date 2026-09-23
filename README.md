@@ -77,6 +77,8 @@ x-route/
 ├── src/
 │   ├── grafo.py                     Carga del grafo, adyacencia, coordenadas a nodos, instancias
 │   ├── metricas.py                  Clase Medicion para instrumentar los algoritmos
+│   ├── fase1.py                     BFS, DFS, UCS (búsqueda a ciegas)
+│   ├── fase2.py                     A*, Greedy Best-First, heurísticas, costo_entre_puntos (Fase 3)
 │   ├── visualizar.py                Mapa folium de las instancias
 │   └── area_estudio.py              Experimento para elegir el radio
 ├── requirements.txt
@@ -111,6 +113,44 @@ Reciben el diccionario de adyacencia, los nodos de origen y destino y un objeto 
 - El tiempo se mide sólo durante la búsqueda: `iniciar_cronometro()` al empezar y `detener_cronometro()` al encontrar la meta, antes de reconstruir el camino.
 
 **Prueba rápida:** en el grafo de juguete de `metricas.py`, de 1 a 3, BFS debe devolver `[1, 3]` (1 arco, 50 m) y UCS `[1, 2, 3]` (2 arcos, 35.5 m).
+
+## Fase 2 — Búsqueda informada
+
+`src/fase2.py` implementa A* y Greedy Best-First Search sobre el mismo `ady` de Fase 1, con la misma convención de instrumentación (prueba de meta al sacar, `medicion.registrar_expansion()` / `medicion.actualizar_frontera()` en cada pop/push).
+
+**Firma de los algoritmos informados** (extiende la firma común con la heurística ya evaluada para el destino actual):
+
+```python
+a_estrella(ady, origen, destino, medicion, heuristica) -> list[int] | None
+greedy_best_first(ady, origen, destino, medicion, heuristica) -> list[int] | None
+```
+
+`heuristica` es un diccionario `{nodo: h(nodo)}` **precalculado para un destino fijo** por uno de los tres generadores:
+
+- `heuristica_haversine(coords, destino)` — admisible por argumento geométrico exacto (la geodésica es la distancia mínima posible entre dos puntos sobre la esfera).
+- `heuristica_euclidiana(coords, destino)` — distancia en un plano tangente local (`proyectar_local()`); admisible en teoría, con violaciones empíricas mínimas (fracciones de metro) por el error numérico de la proyección aproximada.
+- `heuristica_personalizada(coords, ady, destino)` — Haversine + penalización por giro estimado; **no admisible en general, a propósito** (ver docstring), para contrastar el trade-off calidad-vs-velocidad.
+
+`coords = extraer_coordenadas(G)` da el diccionario `{nodo: (lat, lon)}` que consumen las tres heurísticas.
+
+**Función de costo para Fase 3** (la que pidió el equipo el lunes en la noche):
+
+```python
+from fase2 import costo_entre_puntos
+metros = costo_entre_puntos(lat1, lon1, lat2, lon2)   # Haversine directo, sin pasar por el grafo
+```
+
+**Verificación de admisibilidad:** `distancias_reales_hacia_destino(ady, destino)` corre un Dijkstra desde el destino sobre el grafo transpuesto (`construir_adyacencia_reversa`) para obtener el costo real óptimo de **cualquier** nodo hacia ese destino — no sólo del origen de un par de prueba. `verificar_admisibilidad(heuristica, distancias_reales, nombre)` compara ambos y reporta cuántos nodos violan `h(n) <= costo_real(n)`.
+
+**Factor de ramificación efectiva:** `factor_ramificacion_efectiva(nodos_expandidos, profundidad)` resuelve numéricamente `N + 1 = 1 + b* + b*² + ... + b*^d` (Russell & Norvig) por bisección.
+
+Ejecutar desde la raíz del proyecto:
+
+```
+python src/fase2.py
+```
+
+Genera `resultados/fase2/resultados_fase2.csv`, `resultados/fase2/admisibilidad_fase2.csv` y mapas folium de cada ruta A*.
 
 ## Notas
 

@@ -220,6 +220,69 @@ Se cambió el tile de CartoDB a OpenStreetMap por requerir API key.
 **¿El output fue técnicamente correcto?**
 Sí. Los 33 tests unitarios pasan y los resultados coinciden con el 
 comportamiento teórico esperado de cada algoritmo.
+---
+## [Roberto Ulises Bistrain Flores] — Búsqueda informada (Fase 2)
+## Entrada — 22 de septiembre de 2026 — Claude (claude.ai)
+
+**Prompt exacto:**
+"FASE 2, búsqueda informada — A* con cola de prioridad por f(n)=g(n)+h(n)
+y tres heurísticas: euclidiana proyectada, Haversine, y una personalizada
+que mezcle distancia con giros estimados. Verificar admisibilidad de cada
+una, implementar Greedy Best-First para contrastar, calcular el factor de
+ramificación efectiva b* y contestar sus preguntas. IMPORTANTE: quien tome
+esta parte debe entregar una función de costo entre dos puntos el LUNES
+en la noche, porque la Fase 3 la necesita."
+
+(Se compartió el zip del repositorio del equipo, incluyendo `grafo.py`,
+`metricas.py` y `fase1.py` ya terminados, para mantener las mismas
+convenciones de firma de funciones y de instrumentación.)
+
+**Output recibido:**
+Archivo `fase2.py` con `a_estrella()`, `greedy_best_first()`, las tres
+heurísticas (`heuristica_haversine`, `heuristica_euclidiana`,
+`heuristica_personalizada`), la función de costo `costo_entre_puntos()`
+(Haversine, para Fase 3), un verificador de admisibilidad basado en un
+Dijkstra hacia atrás desde el destino (`distancias_reales_hacia_destino` +
+`verificar_admisibilidad`) que compara cada heurística contra el costo
+real óptimo en TODOS los nodos alcanzables (no sólo en el origen de cada
+par de prueba), y `factor_ramificacion_efectiva()` resuelto por bisección.
+También `tests/test_fase2.py` con pruebas sobre grafos de juguete.
+
+**Qué se incorporó:**
+La estructura completa del archivo, las tres heurísticas y el mecanismo
+de verificación de admisibilidad por Dijkstra hacia atrás (en vez de
+verificar admisibilidad sólo "a ojo" comparando contra UCS en los 5 pares
+de prueba, que sólo cubriría los nodos de origen, no la red completa).
+
+**Qué se modificó / verificó:**
+Antes de aceptar el archivo, se corrieron manualmente los algoritmos sobre
+los grafos de juguete de Fase 1 (rombo, lineal, con pesos distintos) y
+sobre una cuadrícula sintética de 36 nodos con coordenadas reales de la
+zona, para confirmar: que A* con heurística admisible siempre coincide en
+costo con UCS; que A* nunca expande más nodos que UCS con una heurística
+admisible; y que Greedy puede llegar a una ruta más larga que la óptima.
+Al correr `verificar_admisibilidad()` sobre la cuadrícula sintética, la
+heurística "euclidiana proyectada" mostró violaciones diminutas (menos de
+1 metro) que en el primer borrador del docstring se afirmaban imposibles
+por argumento puramente teórico; se corrigió el docstring para explicar
+que esas violaciones vienen del error numérico de aproximar la proyección
+local con un solo factor de escala en la latitud promedio, no de un error
+conceptual de la heurística, y se ajustó el texto de análisis para no
+afirmar "100% admisible" sin haberlo verificado con el grafo real de la
+instancia.
+
+**¿El output fue técnicamente correcto?**
+Sí, con la corrección de la nota anterior sobre la euclidiana proyectada.
+No se pudo ejecutar `python src/fase2.py` de punta a punta en el entorno
+donde se generó el código porque `osmnx` no estaba disponible sin conexión
+a internet; se validó la lógica de todos los algoritmos con grafos de
+prueba controlados y con un grafo simulado del mismo tamaño y forma que el
+real. Falta correr `pytest tests/test_fase2.py -v` y `python src/fase2.py`
+con el `.graphml` real del repositorio antes de dar la fase por cerrada,
+y confirmar el b* obtenido en la instancia real para las preguntas de
+análisis (el archivo ya imprime y guarda esos valores automáticamente en
+`resultados/fase2/resultados_fase2.csv`).
+
 ## Otros integrantes
 
 (Cada integrante agrega aquí su sección con el mismo formato.)
