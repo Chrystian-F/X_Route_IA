@@ -220,6 +220,87 @@ Se cambió el tile de CartoDB a OpenStreetMap por requerir API key.
 **¿El output fue técnicamente correcto?**
 Sí. Los 33 tests unitarios pasan y los resultados coinciden con el 
 comportamiento teórico esperado de cada algoritmo.
+---
+## [Roberto Ulises Bistrain Flores] — Búsqueda informada (Fase 2)
+## Entrada — 22 de septiembre de 2026 — Claude (claude.ai)
+
+**Prompt exacto:**
+"FASE 2, búsqueda informada — A* con cola de prioridad por f(n)=g(n)+h(n)
+y tres heurísticas: euclidiana proyectada, Haversine, y una personalizada
+que mezcle distancia con giros estimados. Verificar admisibilidad de cada
+una, implementar Greedy Best-First para contrastar, calcular el factor de
+ramificación efectiva b* y contestar sus preguntas. IMPORTANTE: quien tome
+esta parte debe entregar una función de costo entre dos puntos el LUNES
+en la noche, porque la Fase 3 la necesita."
+
+(Se compartió el zip del repositorio del equipo, incluyendo `grafo.py`,
+`metricas.py` y `fase1.py` ya terminados, para mantener las mismas
+convenciones de firma de funciones y de instrumentación.)
+
+**Output recibido:**
+Archivo `fase2.py` con `a_estrella()`, `greedy_best_first()`, las tres
+heurísticas (`heuristica_haversine`, `heuristica_euclidiana`,
+`heuristica_personalizada`), la función de costo `costo_entre_puntos()`
+(Haversine, para Fase 3), un verificador de admisibilidad basado en un
+Dijkstra hacia atrás desde el destino (`distancias_reales_hacia_destino` +
+`verificar_admisibilidad`) que compara cada heurística contra el costo
+real óptimo en TODOS los nodos alcanzables (no sólo en el origen de cada
+par de prueba), y `factor_ramificacion_efectiva()` resuelto por bisección.
+También `tests/test_fase2.py` con pruebas sobre grafos de juguete.
+
+**Qué se incorporó:**
+La estructura completa del archivo, las tres heurísticas y el mecanismo
+de verificación de admisibilidad por Dijkstra hacia atrás (en vez de
+verificar admisibilidad sólo "a ojo" comparando contra UCS en los 5 pares
+de prueba, que sólo cubriría los nodos de origen, no la red completa).
+
+**Qué se modificó / verificó:**
+Antes de aceptar el archivo, se corrieron manualmente los algoritmos sobre
+los grafos de juguete de Fase 1 (rombo, lineal, con pesos distintos) y
+sobre una cuadrícula sintética de 36 nodos con coordenadas reales de la
+zona, para confirmar: que A* con heurística admisible siempre coincide en
+costo con UCS; que A* nunca expande más nodos que UCS con una heurística
+admisible; y que Greedy puede llegar a una ruta más larga que la óptima.
+Al correr `verificar_admisibilidad()` sobre la cuadrícula sintética, la
+heurística "euclidiana proyectada" mostró violaciones diminutas (menos de
+1 metro) que en el primer borrador del docstring se afirmaban imposibles
+por argumento puramente teórico; se corrigió el docstring para explicar
+que esas violaciones vienen del error numérico de aproximar la proyección
+local con un solo factor de escala en la latitud promedio, no de un error
+conceptual de la heurística, y se ajustó el texto de análisis para no
+afirmar "100% admisible" sin haberlo verificado con el grafo real de la
+instancia.
+
+**¿El output fue técnicamente correcto?**
+Sí, con la corrección de la nota anterior sobre la euclidiana proyectada.
+No se pudo ejecutar `python src/fase2.py` de punta a punta en el entorno
+donde se generó el código porque `osmnx` no estaba disponible sin conexión
+a internet; se validó la lógica de todos los algoritmos con grafos de
+prueba controlados y con un grafo simulado del mismo tamaño y forma que el
+real. Falta correr `pytest tests/test_fase2.py -v` y `python src/fase2.py`
+con el `.graphml` real del repositorio antes de dar la fase por cerrada,
+y confirmar el b* obtenido en la instancia real para las preguntas de
+análisis (el archivo ya imprime y guarda esos valores automáticamente en
+`resultados/fase2/resultados_fase2.csv`).
+
+---
+## [Flores Bonilla Jesus Eduardo] — Búsqueda local (Fase 3)
+## Entrada — 23 de septiembre de 2026 — Claude Code (claude.ai/code)
+
+**Prompt exacto:**
+"Explicame la fase 3 Búsqueda local (deseable compl FASE 3, búsqueda local — Algoritmo Genético con permutación, cruza OX y mutación por intercambio; Simulated Annealing con enfriamiento geométrico justificado; operador 2-opt; curva de convergencia y comparación calidad vs. tiempoetar esta sección)."
+
+(Se adjuntó el zip del repositorio en la rama `ulises` y el PDF de la práctica.)
+
+**Output recibido:**
+`src/fase3.py` con la matriz de distancias reales calculada con A* de Fase 2, la función objetivo `costo_ruta()`, los operadores 2-opt, OX y mutación por intercambio, Simulated Annealing con enfriamiento geométrico, Algoritmo Genético, hill climbing 2-opt, vecino más cercano, el óptimo exacto por Held-Karp como referencia, el análisis del paisaje de optimización, el experimento de T0, cuatro gráficas de matplotlib, el mapa folium de la mejor ruta y las respuestas a las tres preguntas de análisis. También `tests/test_fase3.py` (40 pruebas) y la sección de Fase 3 del README. Aparte, fuera del repositorio, una explicación de toda la fase para estudiarla.
+
+**Qué se incorporó / modificó:**
+El primer borrador usaba α = 0.95 y un GA de 100 × 200 con mutación 0.2; al correrlo sobre el grafo real quedaban ~10% y ~9% arriba del óptimo. Se midió que la matriz de A* es asimétrica (~420 m de diferencia media entre ida y vuelta por las calles de un solo sentido), lo que vuelve muy rugoso el paisaje bajo 2-opt (255 óptimos locales distintos en 300 arranques). Con eso se cambiaron los parámetros a α = 0.99 y GA 200 × 400 con mutación 0.5 (se probaron 0.2, 0.3, 0.5 y 0.7 con 10 semillas). También se reescribió la respuesta de la pregunta sobre T0, que afirmaba que un T0 muy alto empeora el resultado; el experimento con el mismo número de iteraciones no lo mostró.
+
+**¿El output fue técnicamente correcto?**
+Se verificó con `pytest` (Held-Karp contra fuerza bruta en matrices asimétricas, OX contra el ejemplo del libro de Eiben & Smith, SA y GA encontrando el óptimo en instancias de 7 entregas) y ejecutando `python src/fase3.py` con el `.graphml` real. **Pendiente del integrante:** revisar el código y la explicación, y completar esta entrada con su nombre y lo que modifique.
+
 ## Otros integrantes
 
 (Cada integrante agrega aquí su sección con el mismo formato.)

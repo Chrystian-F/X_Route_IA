@@ -1,0 +1,16 @@
+Par,Heuristica,Nodos_comparados,Violaciones,Pct_violaciones,Max_exceso_m,Es_admisible
+1,Euclidiana,1655,12,0.73,0.34,False
+1,Haversine,1655,0,0.0,0.0,True
+1,Personalizada,1655,59,3.56,83.89,False
+2,Euclidiana,1655,3,0.18,0.21,False
+2,Haversine,1655,0,0.0,0.0,True
+2,Personalizada,1655,29,1.75,83.89,False
+3,Euclidiana,1655,6,0.36,0.43,False
+3,Haversine,1655,0,0.0,0.0,True
+3,Personalizada,1655,61,3.69,83.85,False
+4,Euclidiana,1655,0,0.0,0.0,True
+4,Haversine,1655,0,0.0,0.0,True
+4,Personalizada,1655,48,2.9,50.6,False
+5,Euclidiana,1655,2,0.12,0.16,False
+5,Haversine,1655,0,0.0,0.0,True
+5,Personalizada,1655,57,3.44,83.89,False

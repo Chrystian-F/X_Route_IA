@@ -77,6 +77,9 @@ x-route/
 ├── src/
 │   ├── grafo.py                     Carga del grafo, adyacencia, coordenadas a nodos, instancias
 │   ├── metricas.py                  Clase Medicion para instrumentar los algoritmos
+│   ├── fase1.py                     BFS, DFS, UCS (búsqueda a ciegas)
+│   ├── fase2.py                     A*, Greedy Best-First, heurísticas, costo_entre_puntos
+│   ├── fase3.py                     Simulated Annealing, Algoritmo Genético, 2-opt, Held-Karp
 │   ├── visualizar.py                Mapa folium de las instancias
 │   └── area_estudio.py              Experimento para elegir el radio
 ├── requirements.txt
@@ -111,6 +114,95 @@ Reciben el diccionario de adyacencia, los nodos de origen y destino y un objeto 
 - El tiempo se mide sólo durante la búsqueda: `iniciar_cronometro()` al empezar y `detener_cronometro()` al encontrar la meta, antes de reconstruir el camino.
 
 **Prueba rápida:** en el grafo de juguete de `metricas.py`, de 1 a 3, BFS debe devolver `[1, 3]` (1 arco, 50 m) y UCS `[1, 2, 3]` (2 arcos, 35.5 m).
+
+## Fase 2 — Búsqueda informada
+
+`src/fase2.py` implementa A* y Greedy Best-First Search sobre el mismo `ady` de Fase 1, con la misma convención de instrumentación (prueba de meta al sacar, `medicion.registrar_expansion()` / `medicion.actualizar_frontera()` en cada pop/push).
+
+**Firma de los algoritmos informados** (extiende la firma común con la heurística ya evaluada para el destino actual):
+
+```python
+a_estrella(ady, origen, destino, medicion, heuristica) -> list[int] | None
+greedy_best_first(ady, origen, destino, medicion, heuristica) -> list[int] | None
+```
+
+`heuristica` es un diccionario `{nodo: h(nodo)}` **precalculado para un destino fijo** por uno de los tres generadores:
+
+- `heuristica_haversine(coords, destino)` — admisible por argumento geométrico exacto (la geodésica es la distancia mínima posible entre dos puntos sobre la esfera).
+- `heuristica_euclidiana(coords, destino)` — distancia en un plano tangente local (`proyectar_local()`); admisible en teoría, con violaciones empíricas mínimas (fracciones de metro) por el error numérico de la proyección aproximada.
+- `heuristica_personalizada(coords, ady, destino)` — Haversine + penalización por giro estimado; **no admisible en general, a propósito** (ver docstring), para contrastar el trade-off calidad-vs-velocidad.
+
+`coords = extraer_coordenadas(G)` da el diccionario `{nodo: (lat, lon)}` que consumen las tres heurísticas.
+
+**Función de costo para Fase 3** (la que pidió el equipo el lunes en la noche):
+
+```python
+from fase2 import costo_entre_puntos
+metros = costo_entre_puntos(lat1, lon1, lat2, lon2)   # Haversine directo, sin pasar por el grafo
+```
+
+**Verificación de admisibilidad:** `distancias_reales_hacia_destino(ady, destino)` corre un Dijkstra desde el destino sobre el grafo transpuesto (`construir_adyacencia_reversa`) para obtener el costo real óptimo de **cualquier** nodo hacia ese destino — no sólo del origen de un par de prueba. `verificar_admisibilidad(heuristica, distancias_reales, nombre)` compara ambos y reporta cuántos nodos violan `h(n) <= costo_real(n)`.
+
+**Factor de ramificación efectiva:** `factor_ramificacion_efectiva(nodos_expandidos, profundidad)` resuelve numéricamente `N + 1 = 1 + b* + b*² + ... + b*^d` (Russell & Norvig) por bisección.
+
+Ejecutar desde la raíz del proyecto:
+
+```
+python src/fase2.py
+```
+
+Genera `resultados/fase2/resultados_fase2.csv`, `resultados/fase2/admisibilidad_fase2.csv` y mapas folium de cada ruta A*.
+
+## Fase 3 — Búsqueda local
+
+`src/fase3.py` busca el orden de visita de las 15 entregas que minimiza la distancia total (TSP, NP-hard: 15! ≈ 1.3 × 10¹² órdenes posibles).
+
+**Formulación:**
+
+- **Estado:** permutación de los índices de las entregas. El recorrido es un circuito cerrado: depósito → π₁ → … → π₁₅ → depósito.
+- **Función objetivo:** `costo_ruta(perm, D)`, la suma de `D[a][b]` sobre los tramos del recorrido. `D` es la matriz 16 × 16 de distancias **reales sobre calles** calculada una sola vez con A* + Haversine de Fase 2 (`matriz_distancias_astar`, 240 búsquedas, ~0.1 s). No se usa `costo_entre_puntos()` (línea recta) porque en esta instancia las calles son en promedio 73% más largas que la línea recta.
+- **Vecindad:** 2-opt (`vecino_2opt`), invertir el tramo `perm[i..j]`.
+- **Matriz asimétrica:** por las calles de un solo sentido, `D[i][j] != D[j][i]` (diferencia media de ~420 m). Invertir un tramo con 2-opt cambia el sentido de todas sus calles, por eso `costo_ruta()` recalcula el recorrido completo en vez de usar la fórmula incremental de 2-opt simétrico.
+
+**Algoritmos:**
+
+| Función | Qué hace |
+|---|---|
+| `simulated_annealing(D, indices, rng, T0, alfa, T_min, iter_por_temp)` | SA con vecindad 2-opt, criterio de Metropolis `exp(-Δ/T)` y enfriamiento geométrico `T ← α·T` |
+| `algoritmo_genetico(D, indices, rng, ...)` | GA generacional: permutaciones, cruza OX (`cruza_ox`), mutación por intercambio (`mutacion_intercambio`), torneo k = 3 y elitismo de 2 |
+| `busqueda_local_2opt(perm, D)` | Hill climbing de máximo descenso con 2-opt hasta un óptimo local (línea base y muestreo del paisaje) |
+| `vecino_mas_cercano(D, indices)` | Heurística constructiva voraz (línea base) |
+| `optimo_held_karp(D, indices)` | Óptimo exacto por programación dinámica O(N²·2ᴺ); sólo como referencia para medir el gap, viable porque N = 15 |
+
+**Parámetros de SA y su justificación:**
+
+- **T₀ = −Δ̄ / ln(0.8)** (`calcular_temperatura_inicial`): se muestrean movimientos 2-opt al azar, Δ̄ es el empeoramiento promedio (~1570 m) y T₀ se elige para aceptarlo con 80% de probabilidad al inicio. Queda T₀ ≈ 7036 y se ajusta solo si cambia la instancia.
+- **α = 0.99:** ~880 niveles de temperatura. Con α = 0.95 (~170 niveles) SA quedaba en promedio ~10% arriba del óptimo contra ~2% con 0.99: el paisaje bajo 2-opt es muy rugoso en esta matriz asimétrica y hace falta enfriar despacio.
+- **T_min = 1 m:** a esa temperatura una ruta 10 m peor se acepta con probabilidad e⁻¹⁰ ≈ 4.5 × 10⁻⁵; SA ya es hill climbing puro.
+- **Iteraciones por temperatura = N(N−1)/2 = 105**, el tamaño de la vecindad 2-opt. Total ≈ 92 600 evaluaciones.
+
+**Parámetros del GA:** 200 individuos × 400 generaciones ≈ 79 400 evaluaciones (presupuesto parecido al de SA), cruza 0.9, mutación 0.5. Con mutación 0.2 o 0.3 la población convergía prematuramente en algunas semillas; con 0.7 la mutación destruía lo que construía la cruza.
+
+**Resultados (10 semillas por método, `resultados/fase3/resumen_fase3.csv`):**
+
+| Método | Costo medio (m) | Gap medio vs óptimo | Mejora sobre ruta aleatoria | Tiempo medio |
+|---|---:|---:|---:|---:|
+| Ruta aleatoria (1000 muestras) | 31 739.7 | 143.8% | — | — |
+| Vecino más cercano | 16 615.4 | 27.60% | 47.65% | 0.05 ms |
+| 2-opt (hill climbing) | 16 262.0 | 24.89% | 48.76% | 1.4 ms |
+| Simulated Annealing | 13 311.6 | 2.23% | 58.06% | ~330 ms |
+| Algoritmo Genético | 13 029.3 | 0.06% | 58.95% | ~900 ms |
+| Óptimo (Held-Karp) | 13 021.0 | 0% | 58.98% | ~0.6 s |
+
+El análisis del paisaje (2-opt desde 300 arranques aleatorios) encontró 255 óptimos locales distintos y sólo 1 arranque llegó al óptimo global; por eso el hill climbing puro no basta y SA/GA sí aportan.
+
+Ejecutar desde la raíz del proyecto (~25 s):
+
+```
+python src/fase3.py
+```
+
+Genera en `resultados/fase3/`: `matriz_distancias_astar.csv`, `resultados_fase3.csv` (cada corrida), `resumen_fase3.csv`, `paisaje_fase3.csv`, `temperatura_inicial_fase3.csv`, las gráficas `convergencia_fase3.png`, `calidad_vs_tiempo_fase3.png`, `paisaje_fase3.png`, `temperatura_inicial_fase3.png` y el mapa `mapa_mejor_ruta.html` (la capa "Ruta aleatoria" se activa desde el control de capas). Al final imprime las respuestas a las tres preguntas de análisis con los números de la corrida.
 
 ## Notas
 
