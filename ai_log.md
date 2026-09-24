@@ -301,6 +301,36 @@ El primer borrador usaba α = 0.95 y un GA de 100 × 200 con mutación 0.2; al c
 **¿El output fue técnicamente correcto?**
 Se verificó con `pytest` (Held-Karp contra fuerza bruta en matrices asimétricas, OX contra el ejemplo del libro de Eiben & Smith, SA y GA encontrando el óptimo en instancias de 7 entregas) y ejecutando `python src/fase3.py` con el `.graphml` real. **Pendiente del integrante:** revisar el código y la explicación, y completar esta entrada con su nombre y lo que modifique.
 
-## Otros integrantes
+---
+## Damián — Visualización, pruebas y reporte (Fase 4)
+## Entrada — 24 de septiembre de 2026 — Claude (claude.ai)
 
-(Cada integrante agrega aquí su sección con el mismo formato.)
+**Prompt exacto:**
+"explicame los mapas de folium con las rutas, los 3
+snapshots obligatorios de la frontera, gráficas de rendimiento con
+matplotlib, tests con pytest para cada algoritmo.
+
+**Output recibido:**
+`src/fase4.py` con la clase `MedicionConSnapshots`,
+snapshots al 10/50/100 % de la búsqueda para BFS, DFS, UCS, A*-Haversine
+y Greedy-Haversine en PNG y en mapas folium con capas activables, mapas
+folium comparativos de los 5 pares, benchmark de los 9 algoritmos
+, 8 gráficas de matplotlib, figuras estáticas del área de estudio y de la ruta óptima del TSP, `tests/test_fase4.py`
+(137 pruebas) y el reporte final en Word/PDF.
+
+**Qué se incorporó / modificó:**
+Antes de aceptar el archivo verifiqué de forma independiente, sin usar
+`metricas.py` ni las fases anteriores, que los 5 óptimos reportados en
+`rendimiento_fase4.csv` coincidieran con `nx.dijkstra_path_length` corrido
+directamente sobre el grafo real: los 5 coincidieron exactamente (Par 1:
+611.70 m, Par 2: 3539.08 m, Par 3: 914.03 m, Par 4: 1986.54 m, Par 5:
+2423.70 m). También revisé que los mapas HTML de snapshots sí trajeran
+control de capas real.
+
+**¿El output fue técnicamente correcto?**
+Sí. Corrí `pytest` con el `.graphml` real y `python src/fase4.py` de punta a punta sin errores. Durante la
+generación el propio modelo corrigió dos errores suyos: una prueba que
+esperaba una frontera equivocada en BFS, y un error de formato del
+reporte que convertía los asteriscos de "A*" y "b*" en itálicas.
+
+
